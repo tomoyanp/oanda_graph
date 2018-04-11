@@ -1,5 +1,6 @@
 from flask import Flask
 from flask import render_template, jsonify, url_for, Response
+import json
 import csv
 
 app = Flask(__name__)
@@ -23,7 +24,11 @@ def get_json():
         {"Date": "28-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"}
     ]
 
-    data = jsonify(data)
+    print data
+    print "==========================================="
+#    data = jsonify(data)
+    data = json.dumps(data)
+    print data
     response = Response(response=data, status=200, mimetype="application/json")
     return response
 
