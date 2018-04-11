@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+    body {
+        font: 10px sans-serif;
+    }
+
+    text {
+        fill: #000;
+    }
+
+    button {
+        position: absolute;
+        right: 20px;
+        top: 440px;
+        display: none;
+    }
+
+    path.candle {
+        stroke: #000000;
+    }
+
+    path.candle.body {
+        stroke-width: 0;
+    }
+
+    path.candle.up {
+        fill: #00AA00;
+        stroke: #00AA00;
+    }
+
+    path.candle.down {
+        fill: #FF0000;
+        stroke: #FF0000;
+    }
+
+</style>
+<body>
+<button>Update</button>
+<script src="static/js/d3.min.js"></script>
+<script src="static/js/techan.min.js"></script>
+<script>
+// set the dimensions and margins of the graph
+var margin = {top: 20, right: 20, bottom: 30, left: 50},
+        width = 960 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom;
+
+// parse the date / time
+//var parseDate = d3.timeParse("%Y-%m-%d");
+var parseDate = d3.timeParse("%d-%m-%Y");
+
+// set the ranges
+var x = techan.scale.financetime()
+        .range([0, width]);
+
+var y = d3.scaleLinear()
+        .range([300, 0]);
+
+var yVolume = d3.scaleLinear()
+        .range([height, 300]);
+
+// define the candlestick
+var candlestick = techan.plot.candlestick()
+        .xScale(x)
+        .yScale(y);
+
+// define the sma
+var sma = techan.plot.sma()
+        .xScale(x)
+        .yScale(y);
+
+// define the volume
+var volume = techan.plot.volume()
+        .xScale(x)
+        .yScale(yVolume);
+
+// append the svg obgect to the body of the page
+// appends a 'group' element to 'svg'
+// moves the 'group' element to the top left margin
+var svg = d3.select("body").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+//// Get the data
+//d3.json('get_data', function(error, data) {
+//    console.log(data);
+//    var cAccessor = candlestick.accessor();
+//    var vAccessor = volume.accessor();
+//
+//    // format the data & sort by date
+//    data = data.slice(0, 140).map(function(d) {
+//        return {
+//            date: parseDate(d.Date),
+//            open: +d.Open,
+//            high: +d.High,
+//            low: +d.Low,
+//            close: +d.Close,
+//            volume: +d.Volume
+//        };
+//    }).sort(function(a, b) { return d3.ascending(cAccessor.d(a), cAccessor.d(b)); });
+//
+//    // Scale the range of the data
+//    x.domain(data.map(cAccessor.d));
+//    y.domain(techan.scale.plot.ohlc(data, cAccessor).domain());
+//    yVolume.domain(techan.scale.plot.volume(data, vAccessor.v).domain());
+//
+//    // Add the volume
+//    svg.append("g")
+//            .attr("class", "volume")
+//            .data([data])
+//            .call(volume);
+//
+//    // Add the candlestick
+//    svg.append("g")
+//            .attr("class", "candlestick")
+//            .data([data])
+//            .call(candlestick);
+//
+//   // Add the sma25
+//   svg.append("g")
+//            .attr("class", "sma ma25")
+//            .datum(techan.indicator.sma().period(25)(data))
+//            .call(sma);
+//
+//    // Add the X Axis
+//    svg.append("g")
+//            .attr("transform", "translate(0," + height + ")")
+//            .call(d3.axisBottom(x));
+//
+//    // Add the Y Axis
+//    svg.append("g")
+//            .call(d3.axisLeft(y));
+//
+//   // Add the Volume-Y Axis
+//   svg.append("g")
+//            .call(d3.axisLeft(yVolume)
+//               .ticks(3)
+//               .tickFormat(d3.format(",.3s")));
+//
+//});
+
+
+//data = [
+//    {"Date": "9-Jun-14"  ,"Open": "62.40", "High": "63.34","Low": "61.79", "Close": "62.88", "Volume": "37617413"},
+//    {"Date": "6-Jun-14"  ,"Open": "63.37", "High": "63.48","Low": "62.15", "Close": "62.50", "Volume": "42442096"},
+//    {"Date": "5-Jun-14"  ,"Open": "63.66", "High": "64.36","Low": "62.82", "Close": "63.19", "Volume": "47352368"},
+//    {"Date": "4-Jun-14"  ,"Open": "62.45", "High": "63.59","Low": "62.07", "Close": "63.34", "Volume": "36513991"},
+//    {"Date": "3-Jun-14"  ,"Open": "62.62", "High": "63.42","Low": "62.32", "Close": "62.87", "Volume": "32216707"},
+//    {"Date": "2-Jun-14"  ,"Open": "63.23", "High": "63.59","Low": "62.05", "Close": "63.08", "Volume": "35995537"},
+//    {"Date": "30-May-14" ,"Open": "63.95", "High": "64.17","Low": "62.56", "Close": "63.30", "Volume": "45283577"},
+//    {"Date": "29-May-14" ,"Open": "63.84", "High": "64.30","Low": "63.51", "Close": "63.83", "Volume": "42699670"},
+//    {"Date": "28-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+//    {"Date": "27-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+//    {"Date": "26-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+//    {"Date": "25-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+//    {"Date": "24-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+//    {"Date": "23-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+//    {"Date": "22-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+//    {"Date": "21-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+//    {"Date": "20-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+//    {"Date": "19-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+//    {"Date": "18-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+//    {"Date": "17-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+//    {"Date": "16-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+//    {"Date": "15-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+//    {"Date": "14-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"}
+//]
+
+
+data = [
+  {"Date": "14-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "15-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "16-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "17-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "18-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "19-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "20-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "21-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "22-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "23-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "24-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "25-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "26-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "27-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "28-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "29-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "30-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "31-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "1-Jun-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "2-Jun-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "3-Jun-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "4-Jun-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "5-Jun-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "6-Jun-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "7-Jun-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "8-Jun-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "9-Jun-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "10-Jun-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "11-Jun-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "12-Jun-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "13-Jun-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "14-Jun-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "15-Jun-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "16-Jun-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "17-Jun-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "18-Jun-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "19-Jun-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "20-Jun-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "21-Jun-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "22-Jun-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "23-Jun-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "24-Jun-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "25-Jun-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "26-Jun-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "27-Jun-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "28-Jun-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "29-Jun-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "30-Jun-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "1-Jul-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "2-Jul-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "3-Jul-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "4-Jul-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "5-Jul-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "6-Jul-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "7-Jul-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "8-Jul-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "9-Jul-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "10-Jul-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "11-Jul-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "12-Jul-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "13-Jul-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "14-Jul-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "15-Jul-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "16-Jul-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "17-Jul-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "18-Jul-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "19-Jul-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "20-Jul-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "21-Jul-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "22-Jul-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "23-Jul-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "24-Jul-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "25-Jul-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "26-Jul-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "27-Jul-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "28-Jul-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "29-Jul-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "30-Jul-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "31-Jul-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "1-Aug-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "2-Aug-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "3-Aug-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "4-Aug-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "5-Aug-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "6-Aug-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "7-Aug-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "8-Aug-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "9-Aug-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "10-Aug-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "11-Aug-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "12-Aug-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "13-Aug-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "14-Aug-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "15-Aug-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "16-Aug-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "17-Aug-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "18-Aug-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "19-Aug-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "20-Aug-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "21-Aug-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "22-Aug-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "23-Aug-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "24-Aug-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "25-Aug-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "26-Aug-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "27-Aug-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "28-Aug-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "29-Aug-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "30-Aug-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "31-Aug-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "1-Sep-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "2-Sep-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "3-Sep-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "4-Sep-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "5-Sep-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "6-Sep-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "7-Sep-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "8-Sep-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "9-Sep-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "10-Sep-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "11-Sep-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "12-Sep-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "13-Sep-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "14-Sep-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "15-Sep-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "16-Sep-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "17-Sep-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "18-Sep-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "19-Sep-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "20-Sep-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "21-Sep-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "22-Sep-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "23-Sep-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "24-Sep-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "25-Sep-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "26-Sep-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "27-Sep-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "28-Sep-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "29-Sep-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "30-Sep-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "1-Oct-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "2-Oct-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "3-Oct-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "4-Oct-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "5-Oct-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "6-Oct-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "7-Oct-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "8-Oct-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "9-Oct-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "10-Oct-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "11-Oct-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "12-Oct-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "13-Oct-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "14-Oct-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "15-Oct-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "16-Oct-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "17-Oct-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "18-Oct-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "19-Oct-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "20-Oct-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "21-Oct-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "22-Oct-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "23-Oct-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "24-Oct-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "25-Oct-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "26-Oct-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "27-Oct-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "28-Oct-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "29-Oct-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "30-Oct-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "31-Oct-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "1-Nov-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "2-Nov-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "3-Nov-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "4-Nov-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "5-Nov-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "6-Nov-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "7-Nov-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "8-Nov-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "9-Nov-14 " ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "10-Nov-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "11-Nov-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "12-Nov-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "13-Nov-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "14-Nov-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "15-Nov-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"},
+  {"Date": "16-Nov-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"}
+]
+
+console.log(data);
+var cAccessor = candlestick.accessor();
+var vAccessor = volume.accessor();
+
+// format the data & sort by date
+data = data.slice(0, 140).map(function(d) {
+    return {
+        date: parseDate(d.Date),
+        open: +d.Open,
+        high: +d.High,
+        low: +d.Low,
+        close: +d.Close,
+        volume: +d.Volume
+    };
+}).sort(function(a, b) { return d3.ascending(cAccessor.d(a), cAccessor.d(b)); });
+
+// Scale the range of the data
+x.domain(data.map(cAccessor.d));
+y.domain(techan.scale.plot.ohlc(data, cAccessor).domain());
+yVolume.domain(techan.scale.plot.volume(data, vAccessor.v).domain());
+
+// Add the volume
+svg.append("g")
+        .attr("class", "volume")
+        .data([data])
+        .call(volume);
+
+// Add the candlestick
+svg.append("g")
+         .attr("class", "candlestick")
+         .data([data])
+         .call(candlestick);
+
+// Add the sma25
+svg.append("g")
+         .attr("class", "sma ma25")
+         .datum(techan.indicator.sma().period(25)(data))
+         .call(sma);
+
+ // Add the X Axis
+ svg.append("g")
+         .attr("transform", "translate(0," + height + ")")
+         .call(d3.axisBottom(x));
+
+ // Add the Y Axis
+ svg.append("g")
+         .call(d3.axisLeft(y));
+
+// Add the Volume-Y Axis
+svg.append("g")
+         .call(d3.axisLeft(yVolume)
+            .ticks(3)
+            .tickFormat(d3.format(",.3s")));
+
+
+
+
+</script>

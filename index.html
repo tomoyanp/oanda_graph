@@ -70,7 +70,7 @@
             .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    d3.csv("http://127.0.0.1:5000/static/js/data.csv", function(error, data) {
+    d3.csv("data.csv", function(error, data) {
         console.log(data);
         var accessor = candlestick.accessor();
 

@@ -1,13 +1,22 @@
 from flask import Flask
-from flask import render_template, jsonify
+from flask import render_template, jsonify, url_for
+import csv
+
 app = Flask(__name__)
 
 @app.route('/')
 def index():
     return render_template("index.html")
 
-@app.route('/get_data')
-def get_data():
+@app.route('/get_csv')
+def get_csv():
+    return "/static/js/data.csv"
+
+#    return "<a href=%s>file</a>" % url_for('static', filename='data.csv')
+
+
+@app.route('/get_json')
+def get_json():
     data = [
         {"Date": "9-Jun-14"  ,"Open": "62.40", "High": "63.34","Low": "61.79", "Close": "62.88", "Volume": "37617413"},
         {"Date": "6-Jun-14"  ,"Open": "63.37", "High": "63.48","Low": "62.15", "Close": "62.50", "Volume": "42442096"},
