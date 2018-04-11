@@ -5,8 +5,16 @@
 <script src="static/js/techan.min.js"></script>
 <script>
     console.log("script start");
-    d3.json("/get_json", function(error, data) {
-        console.log(data);
-    });
-    console.log("script end");
+
+    d3.request("/get_json")
+        .mimyType("application/json")
+        .response(function(xhr) { return psv.parse(xhr.responseText) })
+        .get(function(data) {
+            console.log(data);
+        });
+
+//    d3.json("/get_json", function(error, data) {
+//        console.log(data);
+//    });
+//    console.log("script end");
 </script>
