@@ -1,5 +1,5 @@
 from flask import Flask
-from flask import render_template, jsonify, url_for
+from flask import render_template, jsonify, url_for, Response
 import csv
 
 app = Flask(__name__)
@@ -7,12 +7,6 @@ app = Flask(__name__)
 @app.route('/')
 def index():
     return render_template("index.html")
-
-@app.route('/get_csv')
-def get_csv():
-    return "/static/js/data.csv"
-
-#    return "<a href=%s>file</a>" % url_for('static', filename='data.csv')
 
 
 @app.route('/get_json')
@@ -30,8 +24,8 @@ def get_json():
     ]
 
     data = jsonify(data)
-    print data
-    return data
+    response = Response(response=data, status=200, mimetype="application/json")
+    return response
 
 
 if __name__ == "__main__":
