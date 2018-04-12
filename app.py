@@ -24,9 +24,6 @@ def get_json():
         {"Date": "28-May-14" ,"Open": "63.39", "High": "64.14","Low": "62.62", "Close": "63.51", "Volume": "47795088"}
     ]
 
-    print data
-    print "==========================================="
-#    data = jsonify(data)
     data = json.dumps(data)
     print data
     response = Response(response=data, status=200, mimetype="application/json")

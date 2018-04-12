@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<body>
+<button>Update</button>
+<script src="static/js/d3.min.js"></script>
+<script src="static/js/techan.min.js"></script>
+<script>
+    console.log("script start");
+
+    d3.json("static/js/data2.json").then(function(data) {
+        console.log(data);
+    });
+
+    console.log("script end");
+</script>
